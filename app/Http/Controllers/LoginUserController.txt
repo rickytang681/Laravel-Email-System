@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
+
+class LoginUserController extends Controller
+{
+    public function login(Request $request)
+    {
+        if ($request->isMethod('post')) {
+            $username = $request->input('username');
+            $password = $request->input('password');
+
+            if (!$username || !$password) {
+                return 'Do not leave username or password blank.';
+            }
+
+            $userData = DB::table('users_july')->where('person_username', $username)->first();
+
+            if (!$userData) {
+                return 'The user name or password is incorrect.';
+            }
+
+            if ($password == $userData->person_password) {
+                Session::put('person', ['username' => $userData->person_username, 'email' => $userData->person_email]);
+                if ($request->has('remember_me')) {
+                    $minutes = 30 * 24 * 60; // 30 days
+                    cookie('username', $username, $minutes);
+                    cookie('password', $password, $minutes);
+                } else {
+                    cookie()->forget('username');
+                    cookie()->forget('password');
+                }
+                return redirect()->route('mail');
+            } else {
+                return 'Password is incorrect';
+            }
+        }
+
+        return view('login');
+    }
+}

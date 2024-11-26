@@ -1,0 +1,1 @@
+php artisan migrate --path=/database/migrations/2024_04_01_084936_create_table.php
